@@ -114,9 +114,7 @@ productRouter.post("/:id/reviews", async (req, res, next) => {
 
 productRouter.get("/:id/reviews", async (req, res, next) => {
   try {
-    const { reviews } = await ProductModel.findById(req.params.id, {
-      _id: 0,
-    })
+    const { reviews } = await ProductModel.findById(req.params.id)
 
     res.send(reviews)
   } catch (error) {
