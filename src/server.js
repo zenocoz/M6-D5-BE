@@ -11,10 +11,15 @@ const {
   forbiddenErrorHandler,
   catchAllErrorHandler,
 } = require("./errorHandlers")
+
+const productsRoute = require("./services/products")
+
 const server = express()
 server.use(helmet())
 server.use(cors())
 server.use(express.json())
+
+server.use("/products", productsRoute)
 
 server.use(badRequestErrorHandler)
 server.use(notFoundErrorHandler)
