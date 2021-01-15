@@ -97,7 +97,9 @@ usersRouter.delete("/:cartId/carts/:productId", async (req, res, next) => {
       await UsersModel.findByIdAndUpdate(
         req.params.cartId,
         {
-          $pull: { products: mongoose.Types.ObjectId(req.params.productId) },
+          $pull: {
+            products: { _id: mongoose.Types.ObjectId(req.params.productId) },
+          },
         },
         { runValidators: true, new: true }
       );
