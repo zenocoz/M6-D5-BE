@@ -2,7 +2,19 @@ const express = require("express");
 const q2m = require("query-to-mongo");
 const mongoose = require("mongoose");
 const ProductModel = require("./schema");
-const ReviewModel = require("./reviews/schema")
+const ReviewModel = require("../reviews/schema");
+const multer = require("multer");
+const cloudinary = require("../../cloudinaryHandler");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+
+const cloudStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "products",
+  },
+});
+
+const cloudMulter = multer({ storage: cloudStorage });
 
 const productRouter = express.Router();
 
@@ -93,21 +105,40 @@ productRouter.delete("/:id", async (req, res, next) => {
   }
 });
 
-productRouter.post("/:id/addReview", async (req, res, next) => {
+productRouter.post(
+  "/:id/upload",
+  cloudMulter.single("product"),
+  async (req, res, next) => {
+    try {
+      const product = await ProductModel.findByIdAndUpdate(req.params.id, {
+        $set: {
+          imageUrl: req.file.path,
+        },
+      });
+
+      res.status(201).send(product);
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+);
+
+productRouter.post("/:id/reviews", async (req, res, next) => {
   try {
-    const newReview = new ReviewModel(req.body)
-    const updatedProduct = ProductModel.findByIdAndUpdate(
+    const newReview = new ReviewModel(req.body);
+    const updatedProduct = await ProductModel.findByIdAndUpdate(
       req.params.id,
       {
-        $push: { reviews: { newReview } },
+        $push: { reviews: newReview },
       },
       { runValidators: true, new: true }
-    )
+    );
 
-    res.status(201).send(updatedProduct)
+    res.status(201).send(updatedProduct);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-})
-module.exports = productRouter;
+});
 
+module.exports = productRouter;
