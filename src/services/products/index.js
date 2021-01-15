@@ -1,4 +1,3 @@
-
 const express = require("express");
 const q2m = require("query-to-mongo");
 const mongoose = require("mongoose");
@@ -17,54 +16,53 @@ const cloudStorage = new CloudinaryStorage({
 
 const cloudMulter = multer({ storage: cloudStorage });
 
-
-const productRouter = express.Router()
+const productRouter = express.Router();
 
 productRouter.get("/", async (req, res, next) => {
   try {
-    const query = q2m(req.query)
-    const total = await ProductModel.countDocuments(query.criteria)
+    const query = q2m(req.query);
+    const total = await ProductModel.countDocuments(query.criteria);
     const products = await ProductModel.find(
       query.criteria,
       query.options.fields
     )
       .skip(query.options.skip)
       .limit(query.options.limit)
-      .sort(query.options.sort)
-    res.status(200).send({ links: query.links("/products", total), products })
+      .sort(query.options.sort);
+    res.status(200).send({ links: query.links("/products", total), products });
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
+});
 
 productRouter.get("/:id", async (req, res, next) => {
   try {
-    const product = await ProductModel.findById(req.params.id)
+    const product = await ProductModel.findById(req.params.id);
     if (product) {
-      res.status(200).send(product)
+      res.status(200).send(product);
     } else {
-      const err = new Error()
-      err.message = `Product Id: ${req.params.id} not found`
-      err.httpStatusCode = 404
-      next(err)
+      const err = new Error();
+      err.message = `Product Id: ${req.params.id} not found`;
+      err.httpStatusCode = 404;
+      next(err);
     }
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
+});
 
 productRouter.post("/", async (req, res, next) => {
   try {
-    const newProduct = new ProductModel(req.body)
-    const { _id } = await newProduct.save()
-    res.status(201).send(_id)
+    const newProduct = new ProductModel(req.body);
+    const { _id } = await newProduct.save();
+    res.status(201).send(_id);
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
+});
 
 productRouter.put("/:id", async (req, res, next) => {
   try {
@@ -75,40 +73,39 @@ productRouter.put("/:id", async (req, res, next) => {
         runValidators: true,
         new: true,
       }
-    )
+    );
     if (modifiedProduct) {
-      res.status(200).send(modifiedProduct)
+      res.status(200).send(modifiedProduct);
     } else {
-      const err = new Error()
-      err.message = `Product id: ${req.params.id} not found!`
-      err.httpStatusCode = 404
-      next(err)
+      const err = new Error();
+      err.message = `Product id: ${req.params.id} not found!`;
+      err.httpStatusCode = 404;
+      next(err);
     }
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
+});
 
 productRouter.delete("/:id", async (req, res, next) => {
   try {
-    const deletedProuct = await ProductModel.findByIdAndDelete(req.params.id)
+    const deletedProuct = await ProductModel.findByIdAndDelete(req.params.id);
     if (deletedProuct) {
-      res.status(203).send("Product deleted succsefully")
+      res.status(203).send("Product deleted succsefully");
     } else {
-      const err = new Error()
-      err.message = `Product id: ${req.params.id} not found!`
-      err.httpStatusCode = 404
-      next(err)
+      const err = new Error();
+      err.message = `Product id: ${req.params.id} not found!`;
+      err.httpStatusCode = 404;
+      next(err);
     }
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
+});
 
 //REVIEWS
-
 
 productRouter.post(
   "/:id/upload",
@@ -129,15 +126,13 @@ productRouter.post(
   }
 );
 
-
 productRouter.post("/:id/reviews", async (req, res, next) => {
   try {
-    const newReview = new ReviewModel(req.body)
+    const newReview = new ReviewModel(req.body);
     const updatedProduct = await ProductModel.findByIdAndUpdate(
       req.params.id,
       {
         $push: { reviews: { ...newReview } },
-
       },
       { runValidators: true, new: true }
     );
@@ -146,20 +141,17 @@ productRouter.post("/:id/reviews", async (req, res, next) => {
   } catch (error) {
     console.log(error);
   }
-
 });
-
-})
 
 productRouter.get("/:id/reviews", async (req, res, next) => {
   try {
-    const { reviews } = await ProductModel.findById(req.params.id)
+    const { reviews } = await ProductModel.findById(req.params.id);
 
-    res.send(reviews)
+    res.send(reviews);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-})
+});
 
 productRouter.get("/:id/reviews/:reviewId", async (req, res, next) => {
   try {
@@ -168,16 +160,16 @@ productRouter.get("/:id/reviews/:reviewId", async (req, res, next) => {
       reviews: {
         $elemMatch: { _id: mongoose.Types.ObjectId(req.params.reviewId) },
       },
-    })
+    });
     if (reviews && reviews.length > 0) {
-      res.send(reviews[0])
+      res.send(reviews[0]);
     } else {
-      next()
+      next();
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-})
+});
 
 productRouter.put("/:id/reviews/:reviewId", async (req, res, next) => {
   try {
@@ -186,10 +178,10 @@ productRouter.put("/:id/reviews/:reviewId", async (req, res, next) => {
       reviews: {
         $elemMatch: { _id: mongoose.Types.ObjectId(req.params.reviewId) },
       },
-    })
+    });
 
     if (reviews && reviews.length > 0) {
-      const reviewToModify = { ...reviews[0].toObject(), ...req.body }
+      const reviewToModify = { ...reviews[0].toObject(), ...req.body };
       const modifiedProduct = await ProductModel.findOneAndUpdate(
         {
           _id: mongoose.Types.ObjectId(req.params.id),
@@ -200,15 +192,15 @@ productRouter.put("/:id/reviews/:reviewId", async (req, res, next) => {
           runValidators: true,
           new: true,
         }
-      )
-      res.send(modifiedProduct)
+      );
+      res.send(modifiedProduct);
     } else {
-      next()
+      next();
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-})
+});
 productRouter.delete("/:id/reviews/:reviewId", async (req, res, next) => {
   try {
     const modifiedProduct = await ProductModel.findByIdAndUpdate(
@@ -221,10 +213,10 @@ productRouter.delete("/:id/reviews/:reviewId", async (req, res, next) => {
       {
         new: true,
       }
-    )
-    res.send(modifiedProduct)
+    );
+    res.send(modifiedProduct);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-})
-module.exports = productRouter
+});
+module.exports = productRouter;
