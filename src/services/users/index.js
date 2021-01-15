@@ -91,9 +91,7 @@ usersRouter.delete("/:cartId/carts/:productId", async (req, res, next) => {
 
     await ProductModel.increaseProductQuantiy(req.productId, req.body.quantity);
 
-    const product = 0;
-    console.log(product);
-    if (product === 0) {
+    if (products[0].quantity <= 0) {
       await UsersModel.findByIdAndUpdate(
         req.params.cartId,
         {
