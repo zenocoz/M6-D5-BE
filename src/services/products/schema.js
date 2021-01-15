@@ -15,8 +15,30 @@ const ProductSchema = new Schema(
     ],
     category: String,
     reviews: [],
+    availableQuantity: { type: Number, required: true },
   },
+
   { timestamps: true }
+)
+
+ProductSchema.static(
+  "decreaseProductQuantity",
+  async function (productId, amount) {
+    const product = await ProductModel.findByIdAndUpdate(productId, {
+      $inc: { availableQuantity: -amount },
+    })
+    return product
+  }
+)
+
+ProductSchema.static(
+  "increaseProductQuantiy",
+  async function (productId, amount) {
+    const product = await ProductModel.findByIdAndUpdate(productId, {
+      $inc: { availableQuantity: amount },
+    })
+    return product
+  }
 )
 
 const ProductModel = model("Product", ProductSchema)
