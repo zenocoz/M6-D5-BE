@@ -1,4 +1,4 @@
-const { Schema, model } = require("mongoose");
+const { Schema, model } = require("mongoose")
 
 const ProductSchema = new Schema(
   {
@@ -7,12 +7,18 @@ const ProductSchema = new Schema(
     brand: { type: String, required: true },
     imageUrl: { type: String, required: true },
     price: { type: Number, required: true },
+    reviews: [
+      {
+        comment: { type: String },
+        rate: { type: Number },
+      },
+    ],
     category: String,
     reviews: [],
   },
   { timestamps: true }
-);
+)
 
-const ProductModel = model("Product", ProductSchema);
+const ProductModel = model("Product", ProductSchema)
 
-module.exports = ProductModel;
+module.exports = ProductModel

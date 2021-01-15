@@ -10,6 +10,7 @@ const {
   badRequestErrorHandler,
   forbiddenErrorHandler,
   catchAllErrorHandler,
+
 } = require("./errorHandlers");
 
 const productsRoute = require("./services/products");
@@ -28,6 +29,7 @@ server.use(forbiddenErrorHandler);
 server.use(unauthorizedErrorHandler);
 server.use(catchAllErrorHandler);
 
+
 port = process.env.PORT || 3002;
 
 console.log(endpointsList(server));
@@ -39,8 +41,10 @@ const connectDb = async () => {
       useUnifiedTopology: true,
     });
     server.listen(port, () => {
-      console.log("server running on port", port);
-    });
+
+      console.log("server running on port", port)
+    })
+
   } catch (error) {
     console.log(error);
   }
