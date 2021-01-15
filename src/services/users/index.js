@@ -101,14 +101,14 @@ usersRouter.delete("/:cartId/carts/:productId", async (req, res, next) => {
         },
         { runValidators: true, new: true }
       );
-      res.status(203).send("deleted");
+      res.status(203).send("Product deleted");
     } else {
       await UsersModel.decreaseCartQuantity(
         req.params.cartId,
         req.params.productId,
         req.body.quantity
       );
-      res.status(203).send("product deleted");
+      res.status(203).send("Product deleted");
     }
   } catch (error) {
     console.log(error);
