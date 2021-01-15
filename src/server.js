@@ -10,23 +10,9 @@ const {
   badRequestErrorHandler,
   forbiddenErrorHandler,
   catchAllErrorHandler,
+} = require("./errorHandlers")
 
-} = require("./errorHandlers");
-
-const productsRoute = require("./services/products");
-
-const server = express();
-server.use(helmet());
-server.use(cors());
-server.use(express.json());
-
-server.use("/products", productsRoute);
-
-server.use(badRequestErrorHandler);
-server.use(notFoundErrorHandler);
-server.use(forbiddenErrorHandler);
-server.use(unauthorizedErrorHandler);
-server.use(catchAllErrorHandler);
+const productsRoute = require("./services/products")
 
 const server = express()
 server.use(helmet())
@@ -54,7 +40,6 @@ const connectDb = async () => {
     server.listen(port, () => {
       console.log("server running on port", port)
     })
-
   } catch (error) {
     console.log(error)
   }
