@@ -11,10 +11,18 @@ const {
   forbiddenErrorHandler,
   catchAllErrorHandler,
 } = require("./errorHandlers");
+
+const productsRoute = require("./services/products");
+const usersRoute = require("./services/users");
+
 const server = express();
+
 server.use(helmet());
 server.use(cors());
 server.use(express.json());
+
+server.use("/products", productsRoute);
+server.use("/users", usersRoute);
 
 server.use(badRequestErrorHandler);
 server.use(notFoundErrorHandler);
@@ -28,7 +36,7 @@ console.log(endpointsList(server));
 
 const connectDb = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_DB_LOCAL, {
+    await mongoose.connect(process.env.MONGO_DB_ATLAS, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
