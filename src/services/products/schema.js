@@ -1,4 +1,4 @@
-const { Schema, model } = require("mongoose")
+const { Schema, model } = require("mongoose");
 
 const ProductSchema = new Schema(
   {
@@ -15,32 +15,32 @@ const ProductSchema = new Schema(
     ],
     category: String,
     reviews: [],
-    availableQuantity: { type: Number, required: true },
+    availableQuantity: { type: Number, required: true, min: 0 },
   },
 
   { timestamps: true }
-)
+);
 
 ProductSchema.static(
   "decreaseProductQuantity",
   async function (productId, amount) {
     const product = await ProductModel.findByIdAndUpdate(productId, {
       $inc: { availableQuantity: -amount },
-    })
-    return product
+    });
+    return product;
   }
-)
+);
 
 ProductSchema.static(
   "increaseProductQuantiy",
   async function (productId, amount) {
     const product = await ProductModel.findByIdAndUpdate(productId, {
       $inc: { availableQuantity: amount },
-    })
-    return product
+    });
+    return product;
   }
-)
+);
 
-const ProductModel = model("Product", ProductSchema)
+const ProductModel = model("Product", ProductSchema);
 
-module.exports = ProductModel
+module.exports = ProductModel;

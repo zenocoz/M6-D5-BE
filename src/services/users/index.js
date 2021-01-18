@@ -21,7 +21,7 @@ usersRouter.get("/:cartId", async (req, res, next) => {
   try {
     const cart = await UsersModel.findById(
       req.params.cartId
-    ).populate("products", { reviews: 0 });
+    ).populate("products", { reviews: 0, availableQuantity: 0 });
     if (cart) {
       res.status(200).send(cart);
     } else {
@@ -42,37 +42,48 @@ usersRouter.post("/:cartId/carts/:productId", async (req, res, next) => {
       req.params.productId,
       req.body.quantity
     );
-    if (product) {
-      const newProduct = { ...product.toObject(), quantity: req.body.quantity };
-      const isProductThere = await UsersModel.findProduct(
-        req.params.cartId,
-        req.params.productId
-      );
 
-      if (isProductThere) {
-        await UsersModel.incrementCartQuantity(
-          req.params.cartId,
-          req.params.productId,
-          req.body.quantity
-        );
-        res.send("quantity incremented");
-      } else {
-        const cart = await UsersModel.addToCart(req.params.cartId, newProduct);
-
-        if (cart) {
-          res.status(201).send("product added to cart");
-        } else {
-          const err = new Error();
-          err.message = `Cart id: ${req.params.cartId} not found!`;
-          err.httpStatusCode = 404;
-          next(err);
-        }
-      }
+    if (product.availableQuantity <= 0) {
+      res.status(200).send("Product not in stock");
     } else {
-      const err = new Error();
-      err.message = "product not found";
-      err.httpStatusCode = 404;
-      next(err);
+      if (product) {
+        const newProduct = {
+          ...product.toObject(),
+          quantity: req.body.quantity,
+        };
+        const isProductThere = await UsersModel.findProduct(
+          req.params.cartId,
+          req.params.productId
+        );
+
+        if (isProductThere) {
+          await UsersModel.incrementCartQuantity(
+            req.params.cartId,
+            req.params.productId,
+            req.body.quantity
+          );
+          res.send("quantity incremented");
+        } else {
+          const cart = await UsersModel.addToCart(
+            req.params.cartId,
+            newProduct
+          );
+
+          if (cart) {
+            res.status(201).send("product added to cart");
+          } else {
+            const err = new Error();
+            err.message = `Cart id: ${req.params.cartId} not found!`;
+            err.httpStatusCode = 404;
+            next(err);
+          }
+        }
+      } else {
+        const err = new Error();
+        err.message = "product not found";
+        err.httpStatusCode = 404;
+        next(err);
+      }
     }
   } catch (error) {
     console.log(error);
@@ -82,21 +93,21 @@ usersRouter.post("/:cartId/carts/:productId", async (req, res, next) => {
 
 usersRouter.delete("/:cartId/carts/:productId", async (req, res, next) => {
   try {
-    const { products } = await UsersModel.findById(req.params.cartId, {
+    const { cart } = await UsersModel.findById(req.params.cartId, {
       _id: 0,
-      products: {
+      cart: {
         $elemMatch: { _id: mongoose.Types.ObjectId(req.params.productId) },
       },
     });
 
     await ProductModel.increaseProductQuantiy(req.productId, req.body.quantity);
 
-    if (products[0].quantity <= 0) {
+    if (cart[0].quantity <= 1) {
       await UsersModel.findByIdAndUpdate(
         req.params.cartId,
         {
           $pull: {
-            products: { _id: mongoose.Types.ObjectId(req.params.productId) },
+            cart: { _id: mongoose.Types.ObjectId(req.params.productId) },
           },
         },
         { runValidators: true, new: true }
