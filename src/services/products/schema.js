@@ -32,12 +32,13 @@ ProductSchema.static(
 );
 
 ProductSchema.static(
-  "increaseProductQuantiy",
+  "increaseProductQuantity",
   async function (productId, amount) {
-    const product = await ProductModel.findByIdAndUpdate(productId, {
+    await ProductModel.findByIdAndUpdate(productId, {
       $inc: { availableQuantity: amount },
     });
-    return product;
+    console.log(productId, amount);
+    // return product;
   }
 );
 

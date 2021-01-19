@@ -19,9 +19,13 @@ const usersRouter = express.Router();
 
 usersRouter.get("/:cartId", async (req, res, next) => {
   try {
-    const cart = await UsersModel.findById(
-      req.params.cartId
-    ).populate("products", { reviews: 0, availableQuantity: 0 });
+    const cart = await UsersModel.findById(req.params.cartId).populate(
+      "cart.product",
+      {
+        reviews: 0,
+        availableQuantity: 0,
+      }
+    );
     if (cart) {
       res.status(200).send(cart);
     } else {
@@ -44,13 +48,17 @@ usersRouter.post("/:cartId/carts/:productId", async (req, res, next) => {
     );
 
     if (product.availableQuantity <= 0) {
+      await ProductModel.findByIdAndUpdate(req.params.productId, {
+        availableQuantity: 0,
+      });
       res.status(200).send("Product not in stock");
     } else {
       if (product) {
         const newProduct = {
-          ...product.toObject(),
+          product: product._id,
           quantity: req.body.quantity,
         };
+
         const isProductThere = await UsersModel.findProduct(
           req.params.cartId,
           req.params.productId
@@ -96,18 +104,21 @@ usersRouter.delete("/:cartId/carts/:productId", async (req, res, next) => {
     const { cart } = await UsersModel.findById(req.params.cartId, {
       _id: 0,
       cart: {
-        $elemMatch: { _id: mongoose.Types.ObjectId(req.params.productId) },
+        $elemMatch: { product: mongoose.Types.ObjectId(req.params.productId) },
       },
     });
 
-    await ProductModel.increaseProductQuantiy(req.productId, req.body.quantity);
+    await ProductModel.increaseProductQuantity(
+      req.params.productId,
+      req.body.quantity
+    );
 
     if (cart[0].quantity <= 1) {
       await UsersModel.findByIdAndUpdate(
         req.params.cartId,
         {
           $pull: {
-            cart: { _id: mongoose.Types.ObjectId(req.params.productId) },
+            cart: { product: mongoose.Types.ObjectId(req.params.productId) },
           },
         },
         { runValidators: true, new: true }

@@ -6,7 +6,8 @@ const UserSchema = new Schema({
   surname: { type: String, required: true },
   cart: [
     {
-      products: { type: Schema.Types.ObjectId, ref: "Product" },
+      _id: false,
+      product: { type: Schema.Types.ObjectId, ref: "Product" },
       quantity: Number,
     },
   ],
@@ -16,7 +17,7 @@ const UserSchema = new Schema({
 UserSchema.static("findProduct", async function (id, productId) {
   const isProductThere = await UserModel.findOne({
     _id: id,
-    "cart._id": productId,
+    "cart.product": productId,
   });
   return isProductThere;
 });
@@ -27,7 +28,7 @@ UserSchema.static(
     await UserModel.findOneAndUpdate(
       {
         _id: id,
-        "cart._id": productId,
+        "cart.product": productId,
       },
       {
         $inc: { "cart.$.quantity": quantity },
@@ -42,7 +43,7 @@ UserSchema.static(
     await UserModel.findOneAndUpdate(
       {
         _id: id,
-        "cart._id": productId,
+        "cart.product": productId,
       },
       {
         $inc: { "cart.$.quantity": -quantity },
